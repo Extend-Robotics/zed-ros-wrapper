@@ -162,6 +162,9 @@ void ZEDWrapperNodelet::onInit()
     std::string marker_topic = "plane_marker";
     std::string plane_topic = "plane";
 
+    // Grabbed data topic (internal notification)
+    std::string grabbed_topic = "grabbed";
+
     // Create camera info
     mRgbCamInfoMsg.reset(new sensor_msgs::CameraInfo());
     mLeftCamInfoMsg.reset(new sensor_msgs::CameraInfo());
@@ -533,7 +536,11 @@ void ZEDWrapperNodelet::onInit()
         }
     }
 
+    // Internal notification about grabbed data
+    mPubGrabbed = mNhNs.advertise<std_msgs::Empty>(grabbed_topic, 1);
+
     // Subscribers
+    mGrabbedSub = mNhNs.subscribe(grabbed_topic, 1, &ZEDWrapperNodelet::callback_grabbedData, this);
     mClickedPtSub = mNhNs.subscribe(mClickedPtTopic, 10, &ZEDWrapperNodelet::clickedPtCallback, this);
 
     NODELET_INFO_STREAM("Subscribed to topic " << mClickedPtTopic.c_str());
@@ -566,7 +573,8 @@ void ZEDWrapperNodelet::onInit()
     mDevicePollThread = std::thread(&ZEDWrapperNodelet::device_poll_thread_func, this);
 
     // Start data publishing timer
-    mVideoDepthTimer = mNhNs.createTimer(ros::Duration(1.0 / mVideoDepthFreq), &ZEDWrapperNodelet::callback_pubVideoDepth, this);
+    ros::Duration timerPeriod = mVideoDepthFreq ? ros::Duration(1.0 / mVideoDepthFreq) : ros::DURATION_MAX;
+    mVideoDepthTimer = mNhNs.createTimer(timerPeriod, &ZEDWrapperNodelet::callback_pubVideoDepth, this);
 
     // Start Sensors thread
     mSensThread = std::thread(&ZEDWrapperNodelet::sensors_thread_func, this);
@@ -2295,7 +2303,7 @@ void ZEDWrapperNodelet::callback_dynamicReconf(zed_nodelets::ZedConfig& config, 
             NODELET_INFO("Reconfigure Video and Depth pub. frequency: %g", mVideoDepthFreq);
         }
 
-        mVideoDepthTimer.setPeriod(ros::Duration(1.0 / mVideoDepthFreq));
+        mVideoDepthTimer.setPeriod(mVideoDepthFreq ? ros::Duration(1.0 / mVideoDepthFreq) : ros::DURATION_MAX);
 
         mDynParMutex.unlock();
         // NODELET_DEBUG_STREAM( "dynamicReconfCallback MUTEX UNLOCK");
@@ -2436,7 +2444,12 @@ void ZEDWrapperNodelet::callback_dynamicReconf(zed_nodelets::ZedConfig& config, 
     }
 }
 
-void ZEDWrapperNodelet::callback_pubVideoDepth(const ros::TimerEvent& e)
+void ZEDWrapperNodelet::callback_grabbedData(const std_msgs::Empty& /*e*/)
+{
+    callback_pubVideoDepth(ros::TimerEvent());
+}
+
+void ZEDWrapperNodelet::callback_pubVideoDepth(const ros::TimerEvent& /*e*/)
 {
     static sl::Timestamp lastZedTs = 0; // Used to calculate stable publish frequency
 
@@ -3343,6 +3356,16 @@ void ZEDWrapperNodelet::device_poll_thread_func()
             }
 
             mFrameCount++;
+
+            // Internal grab notification (if not running timer based publishing)
+            double videoDepthFreq;
+
+            mDynParMutex.lock();
+            videoDepthFreq = mVideoDepthFreq;
+            mDynParMutex.unlock();
+
+            if(!videoDepthFreq)
+                mPubGrabbed.publish(std_msgs::Empty());
 
             // SVO recording
             mRecMutex.lock();

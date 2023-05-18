@@ -72,6 +72,7 @@
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <stereo_msgs/DisparityImage.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <std_msgs/Empty.h>
 
 #include <condition_variable>
 #include <memory>
@@ -244,6 +245,12 @@ protected:
     /*! \brief Callback to handle dynamic reconfigure events in ROS
    */
     void callback_dynamicReconf(zed_nodelets::ZedConfig& config, uint32_t level);
+
+    /*! \brief Internal notifification on grabbed data as thread sync mechanism
+   * \param e : empty message
+   */
+    void callback_grabbedData(const std_msgs::Empty &e);
+
 
     /*! \brief Callback to publish Video and Depth data
    * \param e : the ros::TimerEvent binded to the callback
@@ -461,7 +468,10 @@ private:
     ros::Publisher mPubMarker; // Publisher for Rviz markers
     ros::Publisher mPubPlane; // Publisher for detected planes
 
+    ros::Publisher mPubGrabbed; // internal notification about grabbed data
+
     // Subscribers
+    ros::Subscriber mGrabbedSub; // internal notification about grabbed data
     ros::Subscriber mClickedPtSub;
 
     // Timers
