@@ -1600,7 +1600,7 @@ void ZEDWrapperNodelet::start_pos_tracking()
 
     posTrackParams.enable_imu_fusion = mImuFusion;
 
-    posTrackParams.set_as_static = false;
+    posTrackParams.set_as_static = true;
 
     sl::ERROR_CODE err = mZed.enablePositionalTracking(posTrackParams);
 
