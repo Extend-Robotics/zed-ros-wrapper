@@ -994,20 +994,7 @@ void ZEDWrapperNodelet::checkResolFps()
     case sl::RESOLUTION::HD1080:
         if (mZedUserCamModel == sl::MODEL::ZED_X || mZedUserCamModel == sl::MODEL::ZED_XM) 
         {
-            if (mCamFrameRate == 60 || mCamFrameRate == 30) {
-                break;
-            }
-
-            if (mCamFrameRate > 30 && mCamFrameRate < 60) {
-                NODELET_WARN_STREAM("Wrong FrameRate (" << mCamFrameRate << ") for the resolution HD1080. Set to 30 FPS.");
-                mCamFrameRate = 30;
-            } else if (mCamFrameRate > 60) {
-                NODELET_WARN_STREAM("Wrong FrameRate (" << mCamFrameRate << ") for the resolution HD1080. Set to 60 FPS.");
-                mCamFrameRate = 60;
-            } else {
-                NODELET_WARN_STREAM("Wrong FrameRate (" << mCamFrameRate << ") for the resolution HD1080. Set to 30 FPS.");
-                mCamFrameRate = 30;
-            }
+            break; //do not enforce grabbing framerate
         }
         else
         {
@@ -1075,22 +1062,7 @@ void ZEDWrapperNodelet::checkResolFps()
         break;
 
     case sl::RESOLUTION::HD1200:
-        if (mCamFrameRate == 60 || mCamFrameRate == 30) {
-            break;
-        }
-
-        if (mCamFrameRate > 30 && mCamFrameRate < 60) {
-            NODELET_WARN_STREAM("Wrong FrameRate (" << mCamFrameRate << ") for the resolution HD1200. Set to 30 FPS.");
-            mCamFrameRate = 30;
-        } else if (mCamFrameRate > 60) {
-            NODELET_WARN_STREAM("Wrong FrameRate (" << mCamFrameRate << ") for the resolution HD1200. Set to 60 FPS.");
-            mCamFrameRate = 60;
-        } else {
-            NODELET_WARN_STREAM("Wrong FrameRate (" << mCamFrameRate << ") for the resolution HD1200. Set to 30 FPS.");
-            mCamFrameRate = 30;
-        }
-
-        break;
+        break; //do not enforce grabbing framerate
 
     case sl::RESOLUTION::SVGA:
         if (mCamFrameRate == 120 || mCamFrameRate == 60) {
