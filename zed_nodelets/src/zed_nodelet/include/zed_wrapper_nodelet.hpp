@@ -491,7 +491,7 @@ private:
   std::thread mPcThread;    // Point Cloud thread
   std::thread mSensThread;  // Sensors data thread
 
-  bool mStopNode = false;
+  std::atomic<bool> mStopNode;
 
   // Publishers
   image_transport::CameraPublisher mPubRgb;       //

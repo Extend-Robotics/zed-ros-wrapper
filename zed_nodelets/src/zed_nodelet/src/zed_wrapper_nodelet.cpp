@@ -47,7 +47,7 @@ namespace zed_nodelets
 #define MAG_FREQ 50.
 #define BARO_FREQ 25.
 
-ZEDWrapperNodelet::ZEDWrapperNodelet() : Nodelet()
+ZEDWrapperNodelet::ZEDWrapperNodelet() : Nodelet(), mStopNode(false)
 {
 }
 
