@@ -256,6 +256,14 @@ void ZEDWrapperNodelet::onInit()
   }
 
   mZedParams.async_grab_camera_recovery = true;
+
+  // NOTE: this is a temp fix to GMSL2 camera close issues
+  // TODO: check if this issue has been fixed in the SDK
+  if(sl_tools::isZEDX(mZedUserCamModel)) {
+     NODELET_INFO_STREAM("Disable async recovery for GMSL2 cameras");
+     mZedParams.async_grab_camera_recovery = false;
+  }
+
   mZedParams.coordinate_units = sl::UNIT::METER;
   mZedParams.depth_mode = static_cast<sl::DEPTH_MODE>(mDepthMode);
   mZedParams.sdk_verbose = mSdkVerbose;
