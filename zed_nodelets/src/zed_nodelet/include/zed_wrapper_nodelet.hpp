@@ -78,6 +78,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <atomic>
 
 namespace zed_nodelets
 {
